@@ -1,0 +1,18 @@
+Typy hry
+========
+Akordy
+Akordy nezavisle na tonine
+Spoje akordu
+Rytmus
+Rytmus nezavisle na tempu
+Melodie
+Melodie nezavisle na tonine
+
+Zpusoby vyjadreni
+=================
+Zvuk
+Notovy zapis
++ moznost kombi
+
+=> nutna moznost kazdou konfiguraci karty reprezentovat ve vsech vyjadrenich
+

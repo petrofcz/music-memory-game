@@ -1,0 +1,49 @@
+.ui-segment{
+	color: rgb(30, 150, 255);
+	border: 1px solid rgb(30, 150, 255);
+	border-radius: 6px;
+	display:inline-block;
+	font-family: 'Lato',Georgia, Serif;
+    background: white;
+}
+.ui-segment span.option.active{
+	background-color: rgb(30, 150, 255);
+	color: white;
+}
+.ui-segment span.option{
+	font-size: 1em;
+	padding-left: 30px;
+	padding-right: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+	height: 25px;
+	text-align:center;
+	display:inline-block;
+	line-height: 25px;
+	margin: 0px;
+	float:left;
+	cursor:pointer;
+	/*border-right:1px solid rgb(30, 150, 255);*/
+    background-color: white;
+}
+
+.ui-segment span.option:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.ui-segment span.option:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.ui-segment span.option:last-child{
+	border-right: none;
+}
+
+.segment-select{
+	display:none;
+}
+
+#menu div.f {
+    margin: 20px auto 15px auto;
+}

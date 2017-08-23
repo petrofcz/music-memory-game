@@ -1,0 +1,603 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Hudební pexeso</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+        <link rel="stylesheet" href="css/vendor/normalize.css">
+        <link rel="stylesheet" href="css/vendor/segment.css">
+        <link rel="stylesheet" href="css/vendor/tipped.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/styles.css">
+
+        <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+        <!--<h1>Hudební pexeso</h1>-->
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-2.1.4.min.js"><\/script>')</script>
+        <script src="js/vendor/audiolib.min.js"></script>
+        <script src="js/vendor/music.js"></script>
+        <script src="js/vendor/music-tracker.js"></script>
+        <script src="js/vendor/vexflow-min.js"></script>
+        <script src="js/vendor/segment.js"></script>
+        <script src="samples/drum-samples.js"></script>
+        <script src="js/vendor/tipped.js"></script>
+
+        <script src="js/plugins.js?v=1"></script>
+        <script src="js/constants.js?v=1"></script>
+        <script src="js/classes/BaseTask.js?v=1"></script>
+        <script src="js/classes/ChordTask.js?v=1"></script>
+        <script src="js/classes/ScaleTask.js?v=1"></script>
+        <script src="js/classes/RythmTask.js?v=1"></script>
+        <script src="js/classes/Player.js?v=1"></script>
+        <script src="js/classes/Pair.js?v=1"></script>
+        <script src="js/classes/Game.js?v=1"></script>
+        <script src="js/main.js?v=1"></script>
+
+
+        <script>
+
+            var game = null;
+
+            $(function(){
+                $('#menu').removeClass('hidden');
+
+                $(".segment-select").each(function(){
+                    $(this).Segment();
+                });
+
+                Tipped.create('.tooltip');
+
+                $('#new-game').click(function(){
+                    game = null;
+                    $('#menu').removeClass('hidden');
+                    $('#game').addClass('hidden');
+                    $('#new-game').addClass('hidden');
+                });
+
+                $('#start-button').click(function(){
+
+                    var playerNames = [];
+                    for(i=0;i<$('#player-count').val();i++) {
+                        playerNames.push('Player #' + (i+1));
+                    }
+
+                    var renderingMethods = $('#rendering-methods').val().split(';');
+                    if(renderingMethods.length < 2) renderingMethods.push(renderingMethods[0]); // complete to pair (audio -> audio,audio)
+
+                    var cardCount = $('#card-count').val();
+                    var gameType = $('#game-type').val();
+
+                    game = new Game(playerNames, cardCount, gameType, renderingMethods);
+
+                    // initialize structure
+                    var closedCardEl =   $('<div class="table"> \
+                                                <div class="table-cell numbers">        \
+                                                    ?   \
+                                                </div>  \
+                                            </div>');
+
+                    var grid = $('#game .grid');
+                    grid.empty();
+                    for(i = 0; i < cardCount; i++){
+                        var el = $('<div> \
+                            <div class="content">  \
+                            </div> \
+                        </div>');
+                        el.attr('id', 'card-' + i).data('cardId', i);
+
+                        switch(gameType) {
+                            case Tasks.CHORD:
+                            case Tasks.CHORD_ABSTRACT:
+                                el.addClass('square');
+                                break;
+                            case Tasks.SCALE:
+                            case Tasks.SCALE_ABSTRACT:
+                                el.addClass('scale-cell');
+                                break;
+                            case Tasks.RYTHM:
+                                el.addClass('scale-cell');
+                                break;
+
+                        }
+
+
+                        closedCardEl.clone().appendTo(el.find('.content'));
+                        el.click(function() {
+                            if(!$(this).hasClass('active')) {
+                                if (game.handleClick($(this).data('cardId'), $(this).find('.content'))) {
+                                    $(this).addClass('active')
+                                }
+                            }
+                        });
+                        el.appendTo(grid);
+                    }
+
+                    var fnRedrawPlayerList = function(){
+                        $('#player-list').empty();
+                        for(i=0; i<game.players.length; i++) {
+                            var liEl = $('<li></li>');
+                            $('<span class="name"></span>').text(game.players[i].name).appendTo(liEl);
+                            $('<span class="score"></span>').text(game.players[i].score).appendTo(liEl);
+                            if(game.currentPlayerId == i) liEl.addClass('active');
+                            liEl.appendTo('#player-list');
+                        }
+                    };
+
+                    // attach callbacks
+                    game.cbHideCards.add(function(pos1, pos2, cbFinished){
+                        setTimeout(function() {
+                            fnHide = function (pos) {
+                                var el = $('#card-' + pos);
+                                if(!el.hasClass('inactive')) el.removeClass('active').find('.content').empty()
+                                    .append(closedCardEl.clone());
+                            };
+                            fnHide(pos1);
+                            fnHide(pos2);
+                            cbFinished();
+                        }, 2000);
+                    });
+
+                    game.cbPairGained.add(function(pos1, pos2, playerId){
+                        fnRedrawPlayerList();
+                        var fnMakePosInactive = function(pos) {
+                            $('#card-' + pos).addClass('inactive').find('.content').text('X');
+                        };
+                        fnMakePosInactive(pos1);
+                        fnMakePosInactive(pos2);
+                    });
+
+                    game.cbPlayerChange.add(function(oldPlayerId, newPlayerId){
+                        fnRedrawPlayerList();
+                    });
+
+                    game.cbGameOver.add(function(){
+                        $('#new-game').removeClass('hidden');
+                    });
+
+                    fnRedrawPlayerList();
+
+                    $('#menu').addClass('hidden');
+                    $('#game').removeClass('hidden');
+                });
+            });
+
+            function play() {
+
+                args = {};
+
+                // mandatory arguments
+                this.tabDiv = args.tabDiv;
+
+                // check for optional arguments
+                this.tempo = (typeof args.tempo === "number") ? args.tempo : 120;
+
+                this.isPlaying = (typeof args.isPlaying === "boolean") ? args.isPlaying : false;
+
+                this.notesPerBeat = (typeof args.notesPerBeat === "number") ? args.notesPerBeat : 4;
+
+
+               /* this.score = [
+                    {
+                        notes: ['G5'],
+                        dur: 1 / 4
+                    },
+                    {
+                        notes: [],
+                        dur: 1 / 4
+                    },
+                    {
+                        notes: ['E5','C5','G5'],
+                        dur: 1 / 8
+                    },
+                    {
+                        notes: ['E5','C5','G5'],
+                        dur: 1 / 8
+                    }
+                ];*/
+
+                this.score = [];
+
+
+                var baseNote = new Note.fromLatin('D1');
+                var scale = baseNote.scale('chromatic');
+
+                for(i in scale) {
+                    this.score.push(
+                        {
+                            notes: [scale[i].latin() + (scale[i].octave()+1)],
+                            dur: 1/8
+                        }
+                    );
+                }
+
+              // this.score = shuffleArray(this.score);
+
+                // initialize MusicTracker module
+                MusicTracker.init({
+                    score: this.score,
+                    tempo: this.tempo,
+                    isPlaying: false,
+                    isLooping: false,
+                    hasMetronome: false,
+                    drumSample: samples.snare,
+                    notesPerBeat: this.notesPerBeat
+                });
+
+                MusicTracker.play();
+            }
+
+           // play();
+$(function() {
+    /*
+                var ct = new ChordTask('dim7', 'Cb');
+
+                var ts = $('#tst');
+
+                ts.empty();
+                ct.render('sheet', ts);
+                //ct.render('audio', $('#test'));
+        */
+            });
+
+        </script>
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-64377543-1', 'auto');
+            ga('send', 'pageview');
+        </script>
+
+        <div id="tst">
+
+        </div>
+
+        <div id="menu" class="hidden">
+            <h1>Music
+                <span style="letter-spacing: -0.08em; padding-left: 5px;">
+                    <span style="color: #f28c33">P</span>
+                    <span style="position: relative; top: 3px; color: #c5d647">e</span>
+                    <span style="position: relative; top: 0px; color: #49b9a8">X</span>
+                    <span style="position: relative; top: -7px; color: #bf62a6">e</span>
+                    <span style="position: relative; top: 3px; color: #79c267">S</span>
+                    <span style="position: relative; top: -5px; color: #f5d63d">o</span>
+                </span>
+            </h1>
+
+            <form>
+                <div class="f">Choose the game mode:</div>
+                <div class="i">
+                    <select id="game-type" class="segment-select">
+                        <option value="chord" class="tooltip" title="The goal of this type of game is to analyse several chords.">
+                            Chord
+                        </option>
+                        <option value="chord_abstract" class="tooltip" title="In addition to the normal &quot;chord&quot; game type, the base note of the chord is changing through the whole game. (i.e. chord E7, A7, .., X7 are considered to be equivalent in this game type)">
+                            Chord (abstract)
+                        </option>
+                        <option value="scale" class="tooltip" title="The goal of this type of game is to analyse several scales.">
+                            Scale
+                        </option>
+                        <option value="scale_abstract" class="tooltip" title="In addition to the normal &quot;scale&quot; game type, the base note of the scale is changing through the whole game. (i.e. chord E major, A major, .., X major are considered to be equivalent in this game type)">
+                            Scale (abstract)
+                        </option>
+                        <option value="rythm" class="tooltip" title="The goal is to analyse randomly generated rythms">
+                            Rythm
+                        </option>
+                    </select>
+                </div>
+                <div class="f">Choose the game mode:</div>
+                <div class="i">
+                    <select id="rendering-methods" class="segment-select">
+                        <option value="audio" class="tooltip" title="The game entities are represented to the user just in AUDIO form (don't forget to turn your spakers on:-)">
+                            Audio
+                        </option>
+                        <option value="sheet" class="tooltip" title="The game entities are represented to the user just in NOTATION form (sheet music style, baby)">
+                            Notation
+                        </option>
+                        <option value="text" class="tooltip" title="The game entities are represented to the user just in TEXT form (the game is then degraded to the &quot;common&quot; memory game)">
+                            Text
+                        </option>
+                        <option value="audio;sheet" class="tooltip" title="One card of the pair is represened in AUDIO form and the other one in NOTATION form. (for training ear & music reading)">
+                            Audio & Notation
+                        </option>
+                        <option value="audio;text" class="tooltip" title="One card of the pair is represened in AUDIO form and the other one in TEXT form. (for training ear & symbols reading)">
+                            Audio & Text
+                        </option>
+                        <option value="sheet;text" class="tooltip" title="One card of the pair is represened in NOTATION form and the other one in TEXT form. (for training music & symbols reading)">
+                            Notation & Text
+                        </option>
+                    </select>
+                </div>
+                <div class="floating-group">
+                    <div>
+                        <div class="f">Choose number of players:</div>
+                        <div class="i">
+                            <select id="player-count" class="segment-select">
+                                <option value="2" selected>
+                                    2
+                                </option>
+                                <option value="3">
+                                    3
+                                </option>
+                                <option value="4">
+                                    4
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="f">Choose the card count: <small>(~ difficulty)</small></div>
+                        <div class="i">
+                            <select id="card-count" class="segment-select">
+                                <option value="8">8</option>
+                                <option value="12">12</option>
+                                <option value="16">16</option>
+                                <option value="20" selected>20</option>
+                                <option value="24">24</option>
+                                <option value="28">28</option>
+                                <option value="36">36</option>
+                                <option value="48">48</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="button" id="start-button">
+                    Start!
+                </div>
+            </form>
+        </div>
+
+        <div id="game" class="hidden">
+
+            <ul id="player-list" class="playerList">
+                <li class="active">
+               <span class="name">
+                   Player #1
+               </span>
+               <span class="score">
+                   5
+               </span>
+                </li>
+                <li>
+               <span class="name">
+                   Player #2
+               </span>
+               <span class="score">
+                   10
+               </span>
+                </li>
+            </ul>
+
+            <div class="button hidden" id="new-game">
+                New game
+            </div>
+
+            <div class="grid grid-24">
+                <div class="square active">
+                    <div class="content" id="tsq">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>            <div class="square">
+                    <div class="content">
+                        <div class="table">
+                            <div class="table-cell numbers">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
