@@ -134,6 +134,12 @@ small {
 .grid .inactive .content {
     cursor: not-allowed;
     background-color: #808080;
+    border: none;
+}
+
+.grid .success .content {
+    cursor: not-allowed;
+    border: 3px solid #79c267;
 }
 
 .grid .content .numbers {
@@ -156,7 +162,113 @@ canvas {
     padding: 8px;
 }
 
+.grid .square {
+    padding: 8px;
+}
 
+
+.grid .scale-cell .content {
+    width: 420px;
+    height: 160px;
+}
+
+.grid .numbers {
+    font-size: 24px;
+}
+
+@media screen and (max-width: 500px) {
+
+    .grid .square {
+        width: 120px;
+        height: 120px;
+    }
+
+    .grid .square .content {
+        width: 120px;
+        height: 120px;
+    }
+
+    .grid .scale-cell .content {
+        width: 350px;
+        height: 120px;
+    }
+
+    .grid .numbers {
+        font-size: 32px;
+    }
+    .grid .chord-text {
+        font-size: 24px;
+    }
+}
+@media screen and (min-width: 500px) and (max-width: 1200px) {
+
+    .grid .square {
+        width: 160px;
+        height: 160px;
+    }
+
+    .grid .square .content {
+        width: 160px;
+        height: 160px;
+    }
+
+    .grid .scale-cell .content {
+        width: 350px;
+        height: 120px;
+    }
+
+    .grid .numbers {
+        font-size: 36px;
+    }
+    .grid .chord-text {
+        font-size: 28px;
+    }
+}
+
+@media screen and (min-width: 1200px) and (orientation: landscape) {
+    .grid .square {
+        width: 8vw;
+        height: 8vw;
+    }
+
+    .grid .square .content {
+        width: 8vw;
+        height: 8vw;
+    }
+
+    .grid .scale-cell .content {
+        width: 20vw;
+        height: 7vw;
+    }
+
+    .grid .numbers {
+        font-size: 4vw;
+    }
+}
+
+
+@media screen and (min-height: 1200px) and (orientation: portrait) {
+    .grid .square {
+        width: 8vh;
+        height: 8vh;
+    }
+
+    .grid .square .content {
+        width: 8vh;
+        height: 8vh;
+    }
+
+    .grid .scale-cell .content {
+        width: 20vh;
+        height: 7vh;
+    }
+
+    .grid .numbers {
+        font-size: 4vh;
+    }
+}
+
+/*
 @media screen and (orientation:landscape) {
 
     .grid .square {
@@ -206,7 +318,7 @@ canvas {
         font-size: 4vh;
     }
 
-}
+}*/
 
 
 /*  ----------  PLAYER LIST -------------   */
@@ -259,4 +371,13 @@ canvas {
 
 .hidden {
     display: none;
+}
+
+#new-game-bottom {
+    margin-top: 25px;
+}
+
+#new-game {
+    margin-top: 20px;
+    margin-bottom: 25px;
 }

@@ -17,7 +17,7 @@ function ScaleTask(type, baseNote, abstract) {
     baseNote = baseNote.capitalizeFirstLetter();
 
     if(!MUSIC.scales.hasOwnProperty(type)) throw new Error('Unknown type of chord set!');
-    if(!MUSIC.notes.hasOwnProperty(baseNote)) throw new Error('Unknown base note se!');
+    if(!MUSIC.notes.hasOwnProperty(baseNote)) throw new Error('Unknown base note set!');
 
     this.scaleType = type;
     this.baseNote = baseNote;
@@ -79,10 +79,11 @@ function ScaleTask(type, baseNote, abstract) {
         voice.draw(ctx, stave);
     };
 
-    this.renderAudio = function(element) {
+    this.renderAudio = function(element, finishedCallback) {
         $('<div></div>').addClass('audio').appendTo(element);
 
         var score = [];
+        var normalizedNotes = [];
 
         for(i in scale) {
             score.push({
@@ -92,8 +93,13 @@ function ScaleTask(type, baseNote, abstract) {
         }
 
         console.log(score);
+        $(score).each(function(item){
+            //console.log(score[item);
+           normalizedNotes.push(score[item]['notes'][0]);
+        });
 
-        PlayNotes(score, DEFAULT_TEMPO, 4);
+        //PlayNotes(score, DEFAULT_TEMPO, 4);
+        PlayMelody(normalizedNotes, finishedCallback);
     };
 
     this.render = function(type, element) {

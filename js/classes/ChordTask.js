@@ -33,11 +33,12 @@ function ChordTask(type, baseNote, abstract) {
     };
 
 
-    this.renderText = function(element) {
+    this.renderText = function(element, finishedCallback) {
         $('<div></div>').addClass('chord-text').text(this.chordType).appendTo(element);
+        finishedCallback();
     };
 
-    this.renderSheet = function(element) {
+    this.renderSheet = function(element, finishedCallback) {
         w = element.width()*1.1;
         h = element.height()*1.1;
         console.log(w);
@@ -72,9 +73,11 @@ function ChordTask(type, baseNote, abstract) {
 
         // Render voice
         voice.draw(ctx, stave);
+
+        finishedCallback();
     };
 
-    this.renderAudio = function(element) {
+    this.renderAudio = function(element, finishedCallback) {
         $('<div></div>').addClass('audio').appendTo(element);
 
         var score = [{
@@ -82,7 +85,8 @@ function ChordTask(type, baseNote, abstract) {
             dur:   1
         }];
         console.log(score);
-        PlayNotes(score, DEFAULT_TEMPO, 4);
+        //PlayNotes(score, DEFAULT_TEMPO, 4);
+        PlayChord(score[0].notes, finishedCallback);
     };
 
     this.render = function(type, element) {

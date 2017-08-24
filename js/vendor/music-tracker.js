@@ -194,12 +194,12 @@ var MusicTracker = (function() {
 
         // Use sawtooth wave shape for all oscillators
         for (i = 0, len = leads.length; i < len; i++) {
-            leads[i].waveShape = 'sawtooth';
+            leads[i].waveShape = 'triangle';
         }
 
         // todo tune synth .. all values > 10000
         // Initialize ADSR Envelope control
-        adsr = audioLib.ADSREnvelope(dev.sampleRate, 10, 30, .4, 100);
+        adsr = audioLib.ADSREnvelope(dev.sampleRate, 1, 200, .4, 0);
         //adsr = audioLib.ADSREnvelope(dev.sampleRate, 0,0,0,0);
         adsrTotalTime = adsr.attack + adsr.decay + adsr.release;
 

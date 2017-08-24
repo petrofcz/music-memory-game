@@ -26,9 +26,10 @@ BaseTask.getRecordCount = function() { throw new Error('Abstract method!'); };
  * Renders the task to the given element using method specified (by TaskRenderingMethods)
  * @param method TaskRenderingMethods
  * @param element HTML element to be the content rendered in
+ * @param finishedCallback callback that is called after rendering is finished
  * @param ... OTHER PARAMS POSSIBLE
  */
-BaseTask.prototype.render = function(method, element) {
+BaseTask.prototype.render = function(method, element, finishedCallback) {
     var property = 'render' + method.capitalizeFirstLetter();
     var args = Array.prototype.slice.call(arguments);
     args.splice(0, 1);

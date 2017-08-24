@@ -193,4 +193,10 @@ function PlayNotes(score, tempo, notesPerBeat) {
     MusicTracker.play();
 }
 
-
+var simplePlayer = new SimplePlayer('audio');
+function PlayChord(notes, finishedCallback) {
+    simplePlayer.playChord(notes, finishedCallback);
+}
+function PlayMelody(notes, finishedCallback) {
+    simplePlayer.playMelody(notes, finishedCallback);
+}

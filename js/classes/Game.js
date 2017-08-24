@@ -65,7 +65,7 @@ function Game(playerNames, size, gameType, renderingMethods) {
 
         case Tasks.RYTHM:
             for(a = 0; a < this.pairCount; a++) {
-                tasks[a] = new RythmTask(100 + Math.floor(Math.random() * 100));
+                tasks[a] = new RythmTask(100 + Math.floor(Math.random() * 50));
             }
             break;
 
@@ -107,7 +107,9 @@ function Game(playerNames, size, gameType, renderingMethods) {
 
         $(element).empty();
 
-        this.pairs[pos2pairId[pos]].task.render(renderingMethods[rmIndex], element);
+        this.pairs[pos2pairId[pos]].task.render(renderingMethods[rmIndex], element, function(){
+            // do nothing
+        });
 
         if(firstPos != -1 && pos2pairId[firstPos] == pos2pairId[pos]) {     // the player gains that pair
             this.pairs[pos2pairId[firstPos]].ownerId = this.currentPlayerId;

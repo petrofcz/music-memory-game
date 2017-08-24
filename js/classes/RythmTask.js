@@ -25,7 +25,7 @@ function RythmTask(tempo, abstract) {
     var rVexTuplets = [];
     var rVexTies = [];
     var rVexBeams = [];
-    var beatCount = 4 + Math.floor(Math.random()*3);
+    var beatCount = 3 + Math.floor(Math.random()*2);
     var bcRemaining = beatCount + 1, i, maxIndex, index, el, rand;
     var tupletAssocIndex = {};
 
@@ -224,7 +224,6 @@ function RythmTask(tempo, abstract) {
         console.log(rVexBeams);
         console.log(rVex);
         console.log(tupletAssocIndex);
-
     };
 
     this.renderAudio = function(element) {
@@ -232,19 +231,22 @@ function RythmTask(tempo, abstract) {
 
         var score = [];
 
+        randomNoteMap = ['F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4'];
+        randomNote = Math.round(Math.random()*randomNoteMap.length);
+
         for(i in rAudio) {
             var isRest = rAudio[i].toString().slice(-1) == 'r';
             var duration = isRest ? parseFloat(rAudio[i].slice(0, rAudio[i].length-2)) : rAudio[i];
 
             score.push({
-                notes: isRest ? [] : ['F5'],
-                dur: duration
+                notes: isRest ? [] : [randomNoteMap[randomNote]],
+                dur: duration * 0.8
             });
 
             // add little rests between notes
             score.push({
                 notes: [],
-                dur:  duration * 0.1
+                dur:  duration * 0.2
             });
         }
 

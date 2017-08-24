@@ -36,6 +36,7 @@
         <script src="samples/drum-samples.js"></script>
         <script src="js/vendor/tipped.js"></script>
 
+        <script src="js/classes/SimplePlayer.js?v=1"></script>
         <script src="js/plugins.js?v=1"></script>
         <script src="js/constants.js?v=1"></script>
         <script src="js/classes/BaseTask.js?v=1"></script>
@@ -61,11 +62,12 @@
 
                 Tipped.create('.tooltip');
 
-                $('#new-game').click(function(){
+                $('.new-game-button').click(newGameFn = function(){
                     game = null;
                     $('#menu').removeClass('hidden');
                     $('#game').addClass('hidden');
                     $('#new-game').addClass('hidden');
+                    $('#new-game-bottom').addClass('hidden');
                 });
 
                 $('#start-button').click(function(){
@@ -124,6 +126,8 @@
                             }
                         });
                         el.appendTo(grid);
+
+                        $('#new-game-bottom').removeClass('hidden');
                     }
 
                     var fnRedrawPlayerList = function(){
@@ -148,13 +152,16 @@
                             fnHide(pos1);
                             fnHide(pos2);
                             cbFinished();
-                        }, 2000);
+                        }, 2500);
                     });
 
                     game.cbPairGained.add(function(pos1, pos2, playerId){
                         fnRedrawPlayerList();
                         var fnMakePosInactive = function(pos) {
-                            $('#card-' + pos).addClass('inactive').find('.content').text('X');
+                            setTimeout(function() {
+                                $('#card-' + pos).removeClass('success').addClass('inactive').find('.content').text('X');
+                            }, 2000);
+                            $('#card-' + pos).addClass('success');
                         };
                         fnMakePosInactive(pos1);
                         fnMakePosInactive(pos2);
@@ -166,6 +173,7 @@
 
                     game.cbGameOver.add(function(){
                         $('#new-game').removeClass('hidden');
+                        $('#new-game-bottom').addClass('hidden');
                     });
 
                     fnRedrawPlayerList();
@@ -299,7 +307,7 @@ $(function() {
                             Scale (abstract)
                         </option>
                         <option value="rythm" class="tooltip" title="The goal is to analyse randomly generated rythms">
-                            Rythm
+                            Rhythm (experimental)
                         </option>
                     </select>
                 </div>
@@ -387,8 +395,8 @@ $(function() {
                 </li>
             </ul>
 
-            <div class="button hidden" id="new-game">
-                New game
+            <div class="button hidden new-game-button" id="new-game">
+                Start new game
             </div>
 
             <div class="grid grid-24">
@@ -597,6 +605,10 @@ $(function() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="button hidden new-game-button" id="new-game-bottom">
+                Start new game
             </div>
         </div>
     </body>
